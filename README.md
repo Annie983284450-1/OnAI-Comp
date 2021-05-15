@@ -1,4 +1,4 @@
 # OnAI-Comp
 OnAI-Comp: An Online AI Experts Competing Framework for Early Sepsis Detection
 
-We are still cleaning the code ...
+The code still looks messy now. We will clean the code ASAP.
