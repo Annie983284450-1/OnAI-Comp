@@ -12,9 +12,8 @@ from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 import joblib
 import sys
-# path是当前脚本路径的上两级目录
+ 
 path = os.path.abspath(os.path.join(os.path.dirname("__file__"),os.path.pardir,os.path.pardir))
-# 添加上两级目录(如果自定义模块在上两级目录下)
 sys.path.append(path)
  
 from Candidate1.evaluate_sepsis_score import evaluate_sepsis_score
@@ -45,8 +44,6 @@ preprocessing dataset
 '''
 def preprocessing_rf(train_npy_full_path, test_npy_full_path):
     # load the training and testing dataset, which are the same with candidate 1
-    
-    
     test_set = np.sort(np.load(test_npy_full_path))
     train_set = np.sort(np.load(train_npy_full_path))
     all_traincsv = listdir('../data/all_dataset')
