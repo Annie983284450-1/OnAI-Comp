@@ -1,9 +1,4 @@
-'''
-test Multi-armed bandits with UCB1 policy and Thompson Sampling
-author: An Yan, June 2017
 
-modified by Anni Zhou, Mar 1st, 2021
-'''
 import numpy as np
 import argparse
 import math
@@ -236,10 +231,6 @@ class MAB:
             print("*** Average regret:",avg_regret)
             self.regrets.append(avg_regret)
             self.cul_regrets.append(cul_regret)
-
-            print("\n\n\n")
-            # update N_i,t,N_matrix [T,k]
-
             self.N[pulled_arm]+=1
             self.N_matrix[t,:]=self.N
 
@@ -250,7 +241,6 @@ class MAB:
 
 
         ### save dat data
-
         ttt = np.arange(self.T)
         header = "t, psv ID, Selected arm ID, Expert Name, Utility Score"
         data = np.column_stack((ttt, psv_list , self.arm_history,self.expert_name_history, self.all_utilities ))
@@ -258,44 +248,18 @@ class MAB:
 
 
 
-        '''
 
-        header = "X (T), Y- utility score"
-        data = np.column_stack((ttt, self.all_utilities))
-        np.savetxt('./dat/utility_history.dat', data,   header=header)
-        if not os.path.isdir( f_imgs_path):
-
-            os.makedirs( f_imgs_path)
-            np.savetxt( f_imgs_path,  data, fmt="%s",header=header)
-        '''
 
         self.plot_regret(f_dat_path,f_imgs_path)
 
-
-
-
-    '''        expert_name_history =list()
-        hat_mu_list = np.zeros(self.k)
-        arm_history=  np.zeros(self.T)
-        all_utilities = np.zeros(self.T)
-        current_reward = np.zeros(self.k)
-    total expected regrets E(R_t)= T * mu_best - E ( sum_T Xt )
-    = sum_K  (delta_i) * E( N_i(T) )
-    the average regret till round t
-    '''
     def get_average_regret(self,t):
-        #print("\nCalculating regret..............")
-        #print("(t+1) * self.mu_best:",(t+1) * self.mu_best)
-        #print("np.sum(self.rewards):",np.sum(self.rewards))
+
         regret = ((t+1)*self.mu_best - np.sum(self.rewards))/float(t+1)
         if self.mu_best<self.rewards[-1]:
             print("the reward of round ", t , " exceeds 4, which is ", self.rewards[-1], "!!!!!!")
         return regret
 
     def get_cu_regret(self,t):
-        #print("\nCalculating regret..............")
-        #print("(t+1) * self.mu_best:",(t+1) * self.mu_best)
-        #print("np.sum(self.rewards):",np.sum(self.rewards))
         regret = (t+1)*self.mu_best - np.sum(self.rewards)
         if self.mu_best<self.rewards[-1]:
             print("the reward of round ", t , " exceeds 4, which is ", self.rewards[-1], "!!!!!!")
@@ -303,16 +267,12 @@ class MAB:
 
 
     def plot_regret(self,f_dat_path,f_imgs_path):
-
-        #plt.figure(figsize=(8,6))
-
         x = np.arange(self.T)
         y = self.regrets
         y1 = self.cul_regrets
         header = "t, Average Regret, Cumulative Regret"
         data = np.column_stack((x, y, y1))
         np.savetxt(os.path.join(f_dat_path,'average_cumulative_regret.dat'),  data ,delimiter='|', header=header)
-
        ##########Average regret plot ########################
         plt.figure(1)
         plt.plot(x,y)
@@ -322,9 +282,6 @@ class MAB:
         img_name = 'avg_regret_t_'+str(self.T)+'.png'
         filename=os.path.join(f_imgs_path,img_name)
         plt.savefig(filename)
-        # plt.show()
-
-
 
         ##########Cumulative regret plot########################
         plt.figure(2)
@@ -335,13 +292,6 @@ class MAB:
         img_name = 'cumulative_regret_t_'+str(self.T)+'.png'
         filename=os.path.join(f_imgs_path,img_name)
         plt.savefig(filename)
-
-
-
-
-    def reset_game(self):
-        return None
-
 
 
 def main():
@@ -359,9 +309,6 @@ def main():
     experts_name_list.append(['RandomGuess',   'RandomForest', 'LR' ,          'SVC' ])
     experts_name_list.append(['XGB',           'RandomForest', 'LR' ,          'SVC' ])
 
-
-
-
     experts_name_list.append(['RandomForest',  'LR' ,          'SVC' ])
     experts_name_list.append(['XGB',           'LR' ,          'SVC' ])
     experts_name_list.append(['XGB',           'RandomForest', 'SVC' ])
@@ -373,7 +320,6 @@ def main():
     experts_name_list.append(['RandomGuess',   'XGB',          'LR'   ])
     experts_name_list.append(['RandomGuess',   'XGB',          'RandomForest'  ])
 
-
     experts_name_list.append(['RandomGuess',  'XGB'  ])
     experts_name_list.append(['RandomGuess',  'RandomForest' ])
     experts_name_list.append(['RandomGuess',  'LR'  ])
@@ -384,9 +330,7 @@ def main():
     experts_name_list.append(['RandomForest', 'LR'  ])
     experts_name_list.append(['RandomForest', 'SVC' ])
     experts_name_list.append(['LR' ,          'SVC' ])
-    #for i in range(1,len(experts_name_list)):
-    for i in range(0,1):
-    #for i in range(0,1):
+    for i in range(0,len(experts_name_list)):
         mab = MAB(  alpha, T,experts_name_list[i] )
         mab._start_game( )
 if __name__=='__main__':
