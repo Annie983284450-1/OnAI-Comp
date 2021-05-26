@@ -67,43 +67,28 @@ def evaluate_sepsis_score(label_directory, prediction_directory, patient_i):
     dt_optimal = -6
     dt_late    = 3
             
-    # what do these paprameters mean????????????????/
     max_u_tp = 1
     min_u_fn = -2
     u_fp     = -0.05
     u_tn     = 0
 
     # Find label and prediction files.
-    # label_files = []
     all_test_files =  os.listdir(label_directory)
     # print(os.listdir(label_directory)[0])
     
     ## sort the files in the directory with the patient id 
     sorted_all_test_files = sorted(all_test_files)
-    # print(sorted_all_test_files[0])
-    # f_current_patient = all_test_files[patient_i]
+
     f_current_patient = sorted_all_test_files[patient_i]
     ## get the full path of the pxxxxxx.psv file
     label_file = os.path.join(label_directory, f_current_patient)
      
     print("processing label file:", label_file,"..........")
-    # print(f_current_patient)
-    '''
-    ## actually we do not need to worry about the 'f_current_patient.lower().startswith('.')' condition herein
-    ## none of the files in our test dataset starts with '.'
-    ## so it is better to double check and remove all the files starting with '.' in the directory
-    ## otherwise, there might be a conflict between the patient_i and round t
-    ## because we have to guarantee that patient_i = t
-    '''       
+     
     prediction_file = os.path.join(prediction_directory, f_current_patient)
     
     
-    '''
-    actually we do not need to worry about this I think...
-    but anyway, I will keep this double check of number 
-    if len(label_files) != len(prediction_files):
-        raise Exception('Numbers of label and prediction files must be the same.')
-    '''
+
  
  
     # load the label & predictions & predicted_probability from the psv file
@@ -112,9 +97,7 @@ def evaluate_sepsis_score(label_directory, prediction_directory, patient_i):
     probabilities = load_column(prediction_file, probability_header, '|')
     
     
-    # print("labels:",labels      )
-    # print("predictions:",predictions)
-    # print("probabilities:",probabilities)    
+  
     num_rows = len(labels)
     
     # check if every element in this patient record is in the right scale
@@ -142,19 +125,6 @@ def evaluate_sepsis_score(label_directory, prediction_directory, patient_i):
     return observed_utilities
 
  
-# The load_column function loads a column from a table.
-#
-# Inputs:
-#   'filename' is a string containing a filename.
-#
-#   'header' is a string containing a header.
-#
-# Outputs:
-#   'column' is a vector containing a column from the file with the given
-#   header.
-#
-# Example:
-#   Omitted.
 
 def compute_prediction_utility(patient_i,labels, predictions, dt_early=-12, dt_optimal=-6, dt_late=3.0, max_u_tp=1, min_u_fn=-2, u_fp=-0.05, u_tn=0, check_errors=True):
     # Check inputs for errors.
@@ -201,13 +171,12 @@ def compute_prediction_utility(patient_i,labels, predictions, dt_early=-12, dt_o
     u_tn     = 0     
     '''
     # Compare predicted and true conditions.
-    # u = np.zeros(n)
+ 
     for t in range(n):
         if t <= t_sepsis + dt_late:
             # TP: true positive
             if is_septic and predictions[t]:
-                #if t <= t_sepsis + dt_optimal:
-                    # u[t] = max(m_1 * (t - t_sepsis) + b_1, u_fp)
+             
                 if t_sepsis-12 <=t<=t_sepsis+3:
                     u = abs(1/15 * (t_sepsis - t))
                 else:
@@ -223,147 +192,6 @@ def compute_prediction_utility(patient_i,labels, predictions, dt_early=-12, dt_o
                 u =0        
  
     return u
-     
-'''
-this is for the offline framework
-each time it calculate the cumulative normalized utility score for the whole test dataset
-'''
-
-def evaluate_sepsis_score_offline(label_directory, prediction_directory):
-
-    # Set parameters.
-    '''
-    SepsisLabel: indicates the onset of sepsis according to the Sepsis-3 definition, 
-    where 1 indicates sepsis and 0 indicates no sepsis. Entries of NaN (not a number)
-    indicate that there was no recorded measurement of a variable at the time interval.
-    '''
-    label_header       = 'SepsisLabel'
-    prediction_header  = 'PredictedLabel'
-    probability_header = 'PredictedProbability'
-    # we reward classifiers that predict sepsis between 12 hours before and 3 hours after 
-    # the onset time of sepsis
-    dt_early   = -12
-    # the optimal is that you can predict the sepsis 6 hours earlier
-    dt_optimal = -6
-    dt_late    = 3
-
-    max_u_tp = 1
-    min_u_fn = -2
-    u_fp     = -0.05
-    u_tn     = 0
-
-    # Find label and prediction files.
-    label_files = []
-    
-    for f in os.listdir(label_directory):
-        g = os.path.join(label_directory, f)
-        if os.path.isfile(g) and not f.lower().startswith('.') and f.lower().endswith('psv'):
-            label_files.append(g)
-    label_files = sorted(label_files)
-
-    prediction_files = []
-    for f in os.listdir(prediction_directory):
-        g = os.path.join(prediction_directory, f)
-        if os.path.isfile(g) and not f.lower().startswith('.') and f.lower().endswith('psv'):
-            prediction_files.append(g)
-    prediction_files = sorted(prediction_files)
-
-    if len(label_files) != len(prediction_files):
-        raise Exception('Numbers of label and prediction files must be the same.')
-
-    # Load labels and predictions.
-    num_files            = len(label_files)
-    cohort_labels        = []
-    cohort_predictions   = []
-    cohort_probabilities = []
-
-    for k in range(num_files):
-        labels        = load_column(label_files[k], label_header, '|')
-        predictions   = load_column(prediction_files[k], prediction_header, '|')
-        probabilities = load_column(prediction_files[k], probability_header, '|')
-
-        # Check labels and predictions for errors.
-        if not (len(labels) == len(predictions) and len(predictions) == len(probabilities)):
-            raise Exception('Numbers of labels and predictions for a file must be the same.')
-
-        num_rows = len(labels)
-
-        for i in range(num_rows):
-            if labels[i] not in (0, 1):
-                raise Exception('Labels must satisfy label == 0 or label == 1.')
-
-            if predictions[i] not in (0, 1):
-                raise Exception('Predictions must satisfy prediction == 0 or prediction == 1.')
-
-            if not 0 <= probabilities[i] <= 1:
-                warnings.warn('Probabilities do not satisfy 0 <= probability <= 1.')
-
-        if 0 < np.sum(predictions) < num_rows:
-            min_probability_positive = np.min(probabilities[predictions == 1])
-            max_probability_negative = np.max(probabilities[predictions == 0])
-
-            if min_probability_positive <= max_probability_negative:
-                warnings.warn('Predictions are inconsistent with probabilities, i.e., a positive prediction has a lower (or equal) probability than a negative prediction.')
-
-        # Record labels and predictions.
-        cohort_labels.append(labels)
-        cohort_predictions.append(predictions)
-        cohort_probabilities.append(probabilities)
-
-    # Compute AUC, accuracy, and F-measure.
-    labels        = np.concatenate(cohort_labels)
-    predictions   = np.concatenate(cohort_predictions)
-    probabilities = np.concatenate(cohort_probabilities)
-
-    auroc, auprc        = compute_auc(labels, probabilities)
-    accuracy, f_measure = compute_accuracy_f_measure(labels, predictions)
-
-    # Compute utility.
-    observed_utilities = np.zeros(num_files)
-    best_utilities     = np.zeros(num_files)
-    worst_utilities    = np.zeros(num_files)
-    inaction_utilities = np.zeros(num_files)
-
-    for k in range(num_files):
-        labels = cohort_labels[k]
-        num_rows          = len(labels)
-        observed_predictions = cohort_predictions[k]
-        best_predictions     = np.zeros(num_rows)
-        worst_predictions    = np.zeros(num_rows)
-        inaction_predictions = np.zeros(num_rows)
-
-        if np.any(labels):
-            t_sepsis = np.argmax(labels) - dt_optimal
-            best_predictions[max(0, t_sepsis + dt_early) : min(t_sepsis + dt_late + 1, num_rows)] = 1
-        worst_predictions = 1 - best_predictions
-
-        observed_utilities  = compute_prediction_utility(labels, observed_predictions, dt_early, dt_optimal, dt_late, max_u_tp, min_u_fn, u_fp, u_tn)
-        best_utilities      = compute_prediction_utility(labels, best_predictions, dt_early, dt_optimal, dt_late, max_u_tp, min_u_fn, u_fp, u_tn)
-        worst_utilities    = compute_prediction_utility(labels, worst_predictions, dt_early, dt_optimal, dt_late, max_u_tp, min_u_fn, u_fp, u_tn)
-        inaction_utilities  = compute_prediction_utility(labels, inaction_predictions, dt_early, dt_optimal, dt_late, max_u_tp, min_u_fn, u_fp, u_tn)
-
-    unnormalized_observed_utility = np.sum(observed_utilities)
-    unnormalized_best_utility     = np.sum(best_utilities)
-    unnormalized_worst_utility    = np.sum(worst_utilities)
-    unnormalized_inaction_utility = np.sum(inaction_utilities)
-
-    #normalized_observed_utility = (unnormalized_observed_utility - unnormalized_inaction_utility) / (unnormalized_best_utility - unnormalized_inaction_utility)
-
-    return auroc, auprc, accuracy, f_measure, normalized_observed_utility
-
-# The load_column function loads a column from a table.
-#
-# Inputs:
-#   'filename' is a string containing a filename.
-#
-#   'header' is a string containing a header.
-#
-# Outputs:
-#   'column' is a vector containing a column from the file with the given
-#   header.
-#
-# Example:
-#   Omitted.
 
 def load_column(filename, header, delimiter):
     column = []
@@ -391,37 +219,7 @@ def load_column(filename, header, delimiter):
                     column.append(float(arrs[j]))
     return np.array(column)
 
-# The compute_auc function computes AUROC and AUPRC as well as other summary
-# statistics (TP, FP, FN, TN, TPR, TNR, PPV, NPV, etc.) that can be exposed
-# from this function.
-#
-# Inputs:
-#   'labels' is a binary vector, where labels[i] == 0 if the patient is not
-#   labeled as septic at time i and labels[i] == 1 if the patient is labeled as
-#   septic at time i.
-#
-#   'predictions' is a probability vector, where predictions[i] gives the
-#   predicted probability that the patient is septic at time i.  Note that there
-#   must be a prediction for every label, i.e, len(labels) ==
-#   len(predictions).
-#
-# Outputs:
-#   'auroc' is a scalar that gives the AUROC of the algorithm using its
-#   predicted probabilities, where specificity is interpolated for intermediate
-#   sensitivity values.
-#
-#   'auprc' is a scalar that gives the AUPRC of the algorithm using its
-#   predicted probabilities, where precision is a piecewise constant function of
-#   recall.
-#
-# Example:
-#   In [1]: labels = [0, 0, 0, 0, 1, 1]
-#   In [2]: predictions = [0.3, 0.4, 0.6, 0.7, 0.8, 0.8]
-#   In [3]: auroc, auprc = compute_auc(labels, predictions)
-#   In [4]: auroc
-#   Out[4]: 1.0
-#   In [5]: auprc
-#   Out[5]: 1.0
+
 
 def compute_auc(labels, predictions, check_errors=True):
     # Check inputs for errors.
@@ -687,17 +485,5 @@ def compute_prediction_utility(labels, predictions, dt_early=-12, dt_optimal=-6,
 
     # Find total utility for patient.
     return np.sum(u)
-''' 
-#if __name__ == '__main__':
-    #auroc, auprc, accuracy, f_measure, utility = evaluate_sepsis_score(sys.argv[1], sys.argv[2])
-
-    #output_string = 'AUROC|AUPRC|Accuracy|F-measure|Utility\n{}|{}|{}|{}|{}'.format(auroc, auprc, accuracy, f_measure, utility)
-    #if len(sys.argv) > 3:
-    #    with open(sys.argv[3], 'w') as f:
-           # f.write(output_string)
-   # else:
-     #   print(output_string)
-    
-    #compute_prediction_utility(labels, predictions, dt_early=-12, dt_optimal=-6, dt_late=3.0, max_u_tp=1, min_u_fn=-2, u_fp=-0.05, u_tn=0, check_errors=True):
 
 
