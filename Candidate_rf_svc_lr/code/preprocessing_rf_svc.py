@@ -12,9 +12,9 @@ from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 import joblib
 import sys
-# path是当前脚本路径的上两级目录
+ 
 path = os.path.abspath(os.path.join(os.path.dirname("__file__"),os.path.pardir,os.path.pardir))
-# 添加上两级目录(如果自定义模块在上两级目录下)
+ 
 sys.path.append(path)
  
 from Candidate1.evaluate_sepsis_score import evaluate_sepsis_score
@@ -113,7 +113,7 @@ def preprocessing_rf(train_npy_full_path, test_npy_full_path):
                 writer.writerows(all)                 
 
     with open('../data/test_rf.csv', 'a') as csvoutput:
-#  csv.reader() Return a reader object which will iterate over lines in the given csvfile.
+
         writer = csv.writer(csvoutput, lineterminator='\n')
 
 
@@ -132,30 +132,4 @@ def preprocessing_rf(train_npy_full_path, test_npy_full_path):
                 writer.writerows(all)        
 
 
-    '''
-    with open('../data/test_set_rf.csv', 'a') as csvoutput:
  
-        writer = csv.writer(csvoutput, lineterminator='\n')
-        
-
-        for ind, csv_name in enumerate(all_traincsv):
-            if csv_name in test_set:
-                with open('../data/all_dataset/'+ csv_name,'r') as csvinput:
-                    reader = csv.reader(csvinput, delimiter='|')
-                    all = []
-                    if ind == 0:
-                        row = next(reader)
-                        # print(row)
-                        row.append('Patient_id')
-                        row.append('time')
-                        all.append(row)
-                         
-                    else:                        
-                        row = next(reader)
-                        
-                    for i,row in enumerate(reader):
-                        row.append(ind)
-                        row.append(i)
-                        all.append(row)
-                    writer.writerows(all)
-    '''   
