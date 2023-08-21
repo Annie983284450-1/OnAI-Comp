@@ -67,7 +67,7 @@ def evaluate_sepsis_score(label_directory, prediction_directory, patient_i):
     dt_optimal = -6
     dt_late    = 3
             
-    # what do these paprameters mean????????????????/
+   
     max_u_tp = 1
     min_u_fn = -2
     u_fp     = -0.05
