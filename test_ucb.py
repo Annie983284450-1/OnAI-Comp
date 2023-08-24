@@ -136,7 +136,7 @@ class MAB:
         f_imgs_path = os.path.join('./imgs/',f_name )
 
         if not os.path.exists(f_dat_path):
-                os.mkdir(Candidate_xgb, f_dat_path)
+                os.mkdir(f_dat_path)
         if not os.path.exists(f_imgs_path):
             os.mkdir( f_imgs_path)
         test = pd.read_csv('test_set_all_filled.csv')
