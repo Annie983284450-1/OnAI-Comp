@@ -77,8 +77,7 @@ def predict(psv,
 
 
     labels = Y_testi
-
-    ## tested in main() for p000016, the file is successfully saved, same as Candidate_xgb
+ 
     save_prediction_name = save_prediction_dir + '/'+ psv
     save_challenge_predictions(save_prediction_name, PredictedProbability, PredictedLabel)
     save_testlabel_name = save_label_dir +  '/'+ psv
@@ -86,12 +85,10 @@ def predict(psv,
 
 def get_reward_for_current_patient_rf(X_testi,Y_testi, patient_i, experts_name_list ):
     test_set = np.load('./Candidate_xgb/data/test_set.npy')
-    ## sort all the psv files based oT1n the number included in the psv filename (in ascending order)
     test_set = np.sort(test_set,axis = None)
-    # Just want to get the psv file name herein
+ 
     test_seti = test_set[patient_i]
-    # if we run from the root directory ...
-    #prediction_directory = './Candidate_rf_svc_lr/prediction/'
+ 
     f_name = ''
     for i, expert_name in enumerate( experts_name_list ):
         if i==0:
@@ -100,16 +97,7 @@ def get_reward_for_current_patient_rf(X_testi,Y_testi, patient_i, experts_name_l
             f_name = f_name +'_'+ expert_name
         prediction_directory = os.path.join( './prediction_rf/',f_name)
         label_directory = os.path.join('./labels_rf/',f_name)
-
-# 1.mkdir( path [,mode] )
-#       作用：创建一个目录，可以是相对或者绝对路径，mode的默认模式是0777。
-#       如果目录有多级，则创建最后一级。如果最后一级目录的上级目录有不存在的，则会抛出一个OSError。
-#
-#  2.makedirs( path [,mode] )
-#       作用： 创建递归的目录树，可以是相对或者绝对路径，mode的默认模式也是0777。
-#       如果子目录创建失败或者已经存在，会抛出一个OSError的异常，Windows上Error 183即为目录已经存在的异常错误。如果path只有一级，与mkdir一样。
-# 解决方式：先创建上级目录
-#error 13 permission denied
+ 
 
     if not os.path.exists(prediction_directory):
         os.makedirs(prediction_directory)
